@@ -1,51 +1,29 @@
-### OpenDrop Nix Service
 
+Forked from https://github.com/delneg/opendrop-nix-service and flakified
 
-Disclaimer: used by me for my own use cases, YMMV
+didn't work out for me, but maybe you can find a working setup.
 
-Currently, the opendrop server seems to work quite unstable (even worse than Apple's implementation lol)
+#### Usage
 
-However, I managed to successfully transfer photos using it.
+`mkdir /home/user/.local/opendrop-data`
 
-Resources used:
-[Opendrop](https://github.com/seemoo-lab/opendrop)
-[Owl](https://github.com/seemoo-lab/owl)
-[NixPkgs PR by @WolfangAukang](https://github.com/NixOS/nixpkgs/pull/147127)
-[Nixos-CN flake](https://github.com/nixos-cn/flakes/blob/main/packages/opendrop/default.nix)
+And in your system flake:
 
-Anyway, usage in your configuration.nix:
 ```nix
-{ config, pkgs, lib, ... }:
-with lib;
-let
-  # opendrop
-  owl = pkgs.callPackage ./owl/default.nix { };
-  opendrop = pkgs.callPackage ./opendrop/default.nix { };
-  opendropDataDir = "/some/dir";
-  opendropName = "OpendropNixos";
-  owlNetworkInterfaceName = "wlp0d1w1";
-  
-in
 {
-  imports =
-    [
-      ./services/opendrop-server.nix
+  inputs.opendrop-nix-service.url = "github:bendlas/opendrop-nix-service";
+  outputs = { opendrop-nix-service }: {
+    nixosConfigurations.machine.modules = [
+      opendrop-nix-service.nixosModules.opendrop
+      {
+        services.opendrop-server = {
+          enable = true;
+          user = "user";
+          dataDir = "/home/user/.local/opendrop-data";
+          networkInterface = "wlan0";
+        };
+      }
     ];
-  
-  services = {
-    opendrop-server = {
-      enable = true;
-      openFirewall = true;
-      user = user;
-      name = opendropName;
-      dataDir = opendropDataDir;
-      package = opendrop;
-      owlPackage = owl;
-      owlVerbose = true;
-      networkInterface = owlNetworkInterfaceName;
-    };
   };
 }
 ```
-
-License: MIT
