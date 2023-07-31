@@ -101,7 +101,7 @@ in
 
       systemd.services.opendrop-server = {
         description = "Apple AirDrop Server ";
-        after = [ "owl-server.service" ];
+        bindsTo = [ "owl-server.service" ];
         wantedBy = [ "multi-user.target" ];
 
         serviceConfig = {
